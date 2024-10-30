@@ -23,7 +23,8 @@ class VetementsList extends StatelessWidget {
         if (snapshot.hasError) {
           print('Error: ${snapshot.error}');
           return Center(
-              child: Text('Erreur lors du chargement depuis Firebase !'));
+              child: Text(
+                  'Erreur lors du chargement de la base de données Firebase !'));
         } else if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         } else {
@@ -32,30 +33,58 @@ class VetementsList extends StatelessWidget {
             itemCount: vetements.length,
             itemBuilder: (context, index) {
               final vetement = vetements[index];
-              return ListTile(
-                leading: Image.network(
-                  vetement.imageUrl,
-                  width: 80,
-                  height: 80,
-                  errorBuilder: (context, error, stackTrace) {
-                    print('Image error: $error');
-                    return Icon(
-                      Icons.error,
-                      color: Colors.red,
-                    ); // Show error icon if image fails to load
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                elevation: 4,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailPage(vetement: vetement),
+                      ),
+                    );
                   },
-                ),
-                title: Text(vetement.title),
-                subtitle: Text(
-                    'Taille: ${vetement.size}, Prix: ${vetement.price} MAD'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailPage(vetement: vetement),
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Image carrée du vêtement avec bord arrondi
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: vetement.decodeImage(),
+                        ),
+                        SizedBox(width: 16),
+                        // Informations sur le vêtement
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                vetement.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18, // Agrandir le titre
+                                ),
+                              ),
+                              SizedBox(height: 30), // Espacement entre les champs
+                              Text(
+                                'Taille : ${vetement.size}',
+                                style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8), // Espacement entre les champs
+                              Text(
+                                'Prix : ${vetement.price} MAD',
+                                style: TextStyle(fontSize: 14, color: const Color.fromARGB(255, 25, 156, 7),fontWeight: FontWeight.bold ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
           );
@@ -65,13 +94,13 @@ class VetementsList extends StatelessWidget {
   }
 
   void addItemToPanier(Vetement vetement) {
-    String userId = FirebaseAuth.instance.currentUser!.uid;
+    String userId = 'AAAEEE123'; // Remplacez par l'identifiant de l'utilisateur connecté
     FirebaseFirestore.instance
         .collection('panier')
         .doc(userId)
         .collection('vetement')
         .add({
-      'imageUrl': vetement.imageUrl,
+      'imageUrl': vetement.imageBase64, // Enregistre l'image encodée en base64
       'title': vetement.title,
       'size': vetement.size,
       'price': vetement.price,

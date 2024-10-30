@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "528210175222",
+    "project_id": "mvp-project-8e55a",
+    "storage_bucket": "mvp-project-8e55a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528210175222:android:a96e330f0bcfdce33638d7",
+        "android_client_info": {
+          "package_name": "com.mvp.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-pGQzTD5XrVJrBCn6_LAqTj-taqAjrJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

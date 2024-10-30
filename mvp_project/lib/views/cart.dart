@@ -2,13 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mvp_project/models/vetements.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mvp_project/widgets/navbar.dart';
 
-class PanierPage extends StatelessWidget {
+class PanierPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Mon Panier')),
-      body: StreamBuilder<List<Vetement>>(
+  _PanierPageState createState() => _PanierPageState();
+}
+
+class _PanierPageState extends State<PanierPage> {
+  int _selectedIndex = 1; // 1 pour Panier
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Container(
+        padding: const EdgeInsets.only(top: 40.0), // Ajout de padding en haut
+        child: Text(
+          'Mon Panier',
+          style: TextStyle(
+            fontWeight: FontWeight.bold, // Rendre le texte en gras
+          ),
+        ),
+      ),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.only(top: 50.0), // Padding en haut du body
+      child: StreamBuilder<List<Vetement>>(
         stream: fetchPanierItems(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -31,16 +51,13 @@ class PanierPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final vetement = vetements[index];
                       return ListTile(
-                        leading: Image.network(vetement.imageUrl,
-                            width: 50, height: 50),
+                        leading: Image.network(vetement.imageUrl, width: 50, height: 50),
                         title: Text(vetement.title),
-                        subtitle: Text(
-                            'Taille: ${vetement.size}, Prix: ${vetement.price} MAD'),
+                        subtitle: Text('Taille: ${vetement.size}, Prix: ${vetement.price} MAD'),
                         trailing: IconButton(
                           icon: Icon(Icons.close, color: Colors.red),
                           onPressed: () {
-                            removeItemFromPanier(
-                                vetement); // Supprimer l'article du panier
+                            removeItemFromPanier(vetement); // Supprimer l'article du panier
                           },
                         ),
                       );
@@ -52,14 +69,14 @@ class PanierPage extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 0, 60, 109),
+                      color: const Color.fromARGB(255, 41, 128, 216),
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Text(
                       'Total :  $total MAD',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           fontFamily: 'Merriweather'),
@@ -71,8 +88,26 @@ class PanierPage extends StatelessWidget {
           }
         },
       ),
-    );
-  }
+    ),
+    bottomNavigationBar: CustomBottomNavigationBar(
+      selectedIndex: _selectedIndex,
+      onItemTapped: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+        // Naviguer vers d'autres pages en fonction de l'index
+        if (index == 0) {
+          Navigator.pushReplacementNamed(context, '/home'); // Remplacez '/acheter' par le nom de votre route d'achat
+        } else if (index == 1) {
+          // Reste sur la page du panier
+        } else if (index == 2) {
+          Navigator.pushReplacementNamed(context, '/profile'); // Remplacez '/profile' par le nom de votre route de profil
+        }
+      },
+    ),
+  );
+}
+
 
   Stream<List<Vetement>> fetchPanierItems() {
     final user =

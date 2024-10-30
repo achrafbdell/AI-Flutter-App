@@ -18,9 +18,14 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = index;
     });
 
-    if (index == 2) { 
+    if (index == 2) {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       Navigator.pushReplacementNamed(context, '/profile', arguments: userId);
+    }
+
+    if (index == 1) {
+      String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      Navigator.pushReplacementNamed(context, '/panier', arguments: userId);
     }
   }
 
@@ -28,17 +33,28 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? 'Liste des Vetements' : ''),
+        title: Container(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: Text(
+              _selectedIndex == 0
+                  ? 'Liste des Vetements'
+                  : _selectedIndex == 1
+                      ? 'Mon Panier'
+                      : '',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              )),
+        ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),
-      body: _selectedIndex == 0 
-          ? VetementsList() 
-          : _selectedIndex == 1 
-            ? PanierPage() 
-            : ProfilePage(),
+      body: _selectedIndex == 0
+          ? VetementsList()
+          : _selectedIndex == 1
+              ? PanierPage()
+              : ProfilePage(),
     );
   }
 }

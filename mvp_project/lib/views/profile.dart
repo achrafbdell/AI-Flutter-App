@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mvp_project/models/user_data.dart';
+import 'package:mvp_project/widgets/navbar.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,6 +19,16 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _postalCodeController;
   late TextEditingController _cityController;
 
+  late TextEditingController _imageUrlController;
+  late TextEditingController _titleController;
+  late TextEditingController _sizeController;
+  late TextEditingController _priceController;
+  late TextEditingController _categorieController;
+  late TextEditingController _marqueController;
+
+  bool _isHovered = false; // Ajout de la variable d'état pour le hover
+  int _selectedIndex = 2; // 2 pour le profil par défaut
+
   @override
   void initState() {
     super.initState();
@@ -27,66 +38,76 @@ class _ProfilePageState extends State<ProfilePage> {
     _addressController = TextEditingController();
     _postalCodeController = TextEditingController();
     _cityController = TextEditingController();
+
+    // Initialisez les contrôleurs pour le vêtement
+    _imageUrlController = TextEditingController();
+    _titleController = TextEditingController();
+    _sizeController = TextEditingController();
+    _priceController = TextEditingController();
+    _categorieController = TextEditingController();
+    _marqueController = TextEditingController();
+
     _fetchUserData();
   }
 
   void _fetchUserData() async {
-  String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-  print('User ID: $userId');
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    print('User ID: $userId');
 
-  if (userId.isNotEmpty) {
-    UserData? userData = await getUserData(userId);
-    if (userData != null) {
-      if (mounted) {  
-        _loginController.text = userData.login; // email
-        _passwordController.text = userData.password;
-        _birthdayController.text = userData.birthday;
-        _addressController.text = userData.address;
-        _postalCodeController.text = userData.postalCode.toString();
-        _cityController.text = userData.city;
+    if (userId.isNotEmpty) {
+      UserData? userData = await getUserData(userId);
+      if (userData != null) {
+        if (mounted) {
+          _loginController.text = userData.login; // email
+          _passwordController.text = userData.password;
+          _birthdayController.text = userData.birthday;
+          _addressController.text = userData.address;
+          _postalCodeController.text = userData.postalCode.toString();
+          _cityController.text = userData.city;
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Aucun utilisateur trouvé')),
+          );
+        }
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Aucun utilisateur trouvé')),
+          SnackBar(content: Text('Utilisateur non connecté')),
         );
       }
     }
-  } else {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Utilisateur non connecté')),
-      );
+  }
+
+  void _showSnackBar(String message) {
+    Color backgroundColor = Colors.red;
+
+    if (message == 'Profile mis à jour avec succès' ||
+        message == 'Vêtement ajouté avec succès') {
+      backgroundColor = Colors.green;
     }
-  }
-}
 
-void _showSnackBar(String message) {
-  Color backgroundColor = Colors.red; 
-
-  if (message == 'Profil mis à jour avec succès') {
-    backgroundColor = Colors.green; 
-  }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      backgroundColor: backgroundColor,
-      content: Center(
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.bold, 
-            color: Colors.white,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: backgroundColor,
+        content: Center(
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
+        behavior: SnackBarBehavior.floating,
       ),
-      behavior: SnackBarBehavior.floating,
-    ),
-  );
-}
+    );
+  }
 
-Future<bool> _updatePassword() async {
+  Future<bool> _updatePassword() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
@@ -94,16 +115,17 @@ Future<bool> _updatePassword() async {
 
       if (newPassword.length < 6) {
         _showSnackBar('Le mot de passe doit contenir au moins 6 caractères');
-        return false; 
+        return false;
       }
 
       try {
         await user.updatePassword(newPassword);
         //_showSnackBar('Mot de passe mis à jour avec succès');
-        return true; 
+        return true;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'requires-recent-login') {
-          _showSnackBar('Erreur [firebase_auth]: Cette opération est sensible et nécessite une authentification récente. Veuillez vous reconnecter avant de réessayer cette demande.');
+          _showSnackBar(
+              'Erreur [firebase_auth]: Cette opération est sensible et nécessite une authentification récente. Veuillez vous reconnecter avant de réessayer cette demande.');
           await FirebaseAuth.instance.signOut();
         } else {
           print('Erreur lors de la mise à jour du mot de passe: $e');
@@ -112,7 +134,7 @@ Future<bool> _updatePassword() async {
         return false;
       }
     }
-    return false; 
+    return false;
   }
 
   Future<void> _saveProfile() async {
@@ -121,18 +143,21 @@ Future<bool> _updatePassword() async {
       bool passwordUpdated = await _updatePassword();
 
       if (!passwordUpdated) {
-        return; 
+        return;
       }
 
       try {
-        await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .update({
           'birthday': _birthdayController.text,
           'password': _passwordController.text,
           'address': _addressController.text,
           'postalCode': int.tryParse(_postalCodeController.text) ?? 0,
           'city': _cityController.text,
         });
-        _showSnackBar('Profil mis à jour avec succès');
+        _showSnackBar('Profile mis à jour avec succès');
         Navigator.pushReplacementNamed(context, '/home');
       } catch (e) {
         print('Erreur lors de la mise à jour du profil: $e');
@@ -141,25 +166,93 @@ Future<bool> _updatePassword() async {
     }
   }
 
-@override
-void dispose() {
-  _loginController.dispose();
-  _passwordController.dispose();
-  _birthdayController.dispose();
-  _addressController.dispose();
-  _postalCodeController.dispose();
-  _cityController.dispose();
-  super.dispose();
-}
+  Future<void> _addClothing() async {
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (userId.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance.collection('vetement').add({
+          'imageUrl': _imageUrlController.text,
+          'title': _titleController.text,
+          'size': _sizeController.text,
+          'price': double.tryParse(_priceController.text) ?? 0.0,
+          'categorie': _categorieController.text,
+          'marque': _marqueController.text,
+          'userId':
+              userId, // Optionnel, pour associer le vêtement à l'utilisateur
+        });
+        _showSnackBar('Vêtement ajouté avec succès');
+      } catch (e) {
+        print('Erreur lors de l\'ajout du vêtement: $e');
+        _showSnackBar('Erreur lors de l\'ajout du vêtement');
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _loginController.dispose();
+    _passwordController.dispose();
+    _birthdayController.dispose();
+    _addressController.dispose();
+    _postalCodeController.dispose();
+    _cityController.dispose();
+
+    // Dispose des contrôleurs de vêtement
+    _imageUrlController.dispose();
+    _titleController.dispose();
+    _sizeController.dispose();
+    _priceController.dispose();
+    _categorieController.dispose();
+    _marqueController.dispose();
+
+    super.dispose();
+  }
+
+  void _onItemTapped(int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacementNamed(context, '/home');
+        break;
+      case 1:
+        Navigator.pushReplacementNamed(context, '/panier');
+        break;
+      case 2:
+        // Reste sur la page profil, vous pouvez mettre une autre logique si nécessaire
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mon Profil'),
+        title: Container(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: Text(
+            'Mon Profil',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0, top: 16.0),
+            child: TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.pop(context, '/login');
+              },
+              child: Text(
+                'Se déconnecter',
+                style: TextStyle(
+                    color: const Color.fromARGB(255, 200, 14, 14),
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -167,6 +260,7 @@ void dispose() {
               controller: _loginController,
               decoration: InputDecoration(labelText: 'Login'),
             ),
+            SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               obscureText: true, // Masquer le mot de passe
@@ -176,35 +270,130 @@ void dispose() {
               controller: _birthdayController,
               decoration: InputDecoration(labelText: 'Anniversaire'),
             ),
+            SizedBox(height: 16),
             TextField(
               controller: _addressController,
               decoration: InputDecoration(labelText: 'Adresse'),
             ),
+            SizedBox(height: 16),
             TextField(
               controller: _postalCodeController,
               decoration: InputDecoration(labelText: 'Code postal'),
               keyboardType: TextInputType.number,
             ),
+            SizedBox(height: 16),
             TextField(
               controller: _cityController,
               decoration: InputDecoration(labelText: 'Ville'),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveProfile,
-              child: Text('Valider'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pop(context, '/login');
-              },
-              child: Text('Se déconnecter'),
+            SizedBox(height: 25),
+            Center(
+              // Centrer le bouton
+              child: SizedBox(
+                width: 180, // Largeur du bouton
+                height: 50, // Hauteur du bouton
+                child: MouseRegion(
+                  onEnter: (_) {
+                    setState(() {
+                      _isHovered = true; // Changer l'état à hovered
+                    });
+                  },
+                  onExit: (_) {
+                    setState(() {
+                      _isHovered = false; // Changer l'état à non hovered
+                    });
+                  },
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isHovered
+                          ? Colors.white
+                          : const Color.fromARGB(255, 25, 137, 230),
+                      foregroundColor: _isHovered ? Colors.blue : Colors.white,
+                    ),
+                    onPressed: _saveProfile,
+                    child: Text(
+                      'Valider',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddClothingDialog();
+        },
+        child: Icon(Icons.add),
+        tooltip: 'Ajouter un vêtement',
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+
+  void _showAddClothingDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Ajouter un nouveau vêtement'),
+          content: Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _imageUrlController,
+                  decoration: InputDecoration(labelText: 'URL de l\'image'),
+                ),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Titre'),
+                ),
+                TextField(
+                  controller: _sizeController,
+                  decoration: InputDecoration(labelText: 'Taille'),
+                ),
+                TextField(
+                  controller: _priceController,
+                  decoration: InputDecoration(labelText: 'Prix'),
+                  keyboardType: TextInputType.number,
+                ),
+                TextField(
+                  controller: _categorieController,
+                  decoration: InputDecoration(labelText: 'Catégorie'),
+                ),
+                TextField(
+                  controller: _marqueController,
+                  decoration: InputDecoration(labelText: 'Marque'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _addClothing();
+                Navigator.of(context).pop();
+              },
+              child: Text('Ajouter'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Annuler'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

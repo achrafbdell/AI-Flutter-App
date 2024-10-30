@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mvp_project/models/vetements.dart';
@@ -22,8 +23,7 @@ class VetementsList extends StatelessWidget {
         if (snapshot.hasError) {
           print('Error: ${snapshot.error}');
           return Center(
-              child: Text(
-                  'Erreur lors du chargement de la base de donnée Firebase !'));
+              child: Text('Erreur lors du chargement depuis Firebase !'));
         } else if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         } else {
@@ -38,8 +38,11 @@ class VetementsList extends StatelessWidget {
                   width: 80,
                   height: 80,
                   errorBuilder: (context, error, stackTrace) {
+                    print('Image error: $error');
                     return Icon(
-                        Icons.error); // Show error icon if image fails to load
+                      Icons.error,
+                      color: Colors.red,
+                    ); // Show error icon if image fails to load
                   },
                 ),
                 title: Text(vetement.title),
@@ -61,8 +64,8 @@ class VetementsList extends StatelessWidget {
     );
   }
 
-   void addItemToPanier(Vetement vetement) {
-    String userId = 'AAAEEE123'; // Remplacez par l'identifiant de l'utilisateur connecté
+  void addItemToPanier(Vetement vetement) {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
     FirebaseFirestore.instance
         .collection('panier')
         .doc(userId)

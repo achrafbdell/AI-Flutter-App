@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mvp_project/models/vetements.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mvp_project/widgets/navbar.dart';
+import 'dart:convert';
 
 class PanierPage extends StatefulWidget {
   @override
@@ -12,26 +13,31 @@ class PanierPage extends StatefulWidget {
 class _PanierPageState extends State<PanierPage> {
   int _selectedIndex = 1; // 1 pour Panier
 
-  @override
+ 
+ 
+   @override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Container(
-        padding: const EdgeInsets.only(top: 40.0), // Ajout de padding en haut
-        child: Text(
-          'Mon Panier',
-          style: TextStyle(
-            fontWeight: FontWeight.bold, // Rendre le texte en gras
-          ),
+      automaticallyImplyLeading: false,
+      title: Text(
+        'Mon Panier',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: const Color.fromARGB(255, 0, 0, 0),
+          fontFamily: 'Noto Sans Mono',
         ),
       ),
+      backgroundColor: Color.fromARGB(0, 255, 255, 255),
     ),
     body: Padding(
-      padding: const EdgeInsets.only(top: 50.0), // Padding en haut du body
+      padding: const EdgeInsets.only(top: 30.0),
       child: StreamBuilder<List<Vetement>>(
         stream: fetchPanierItems(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
+            print('Erreur lors du chargement du panier: ${snapshot.error}');
             return Center(child: Text('Erreur lors du chargement du panier.'));
           } else if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
@@ -50,16 +56,37 @@ Widget build(BuildContext context) {
                     itemCount: vetements.length,
                     itemBuilder: (context, index) {
                       final vetement = vetements[index];
-                      return ListTile(
-                        leading: Image.network(vetement.imageUrl, width: 50, height: 50),
-                        title: Text(vetement.title),
-                        subtitle: Text('Taille: ${vetement.size}, Prix: ${vetement.price} MAD'),
-                        trailing: IconButton(
-                          icon: Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            removeItemFromPanier(vetement); // Supprimer l'article du panier
-                          },
-                        ),
+                      return Column(
+                        children: [
+                          Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ListTile(
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.memory(
+                                    base64Decode(vetement.image),
+                                    fit: BoxFit.cover, // Remplit le conteneur
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                vetement.title,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text('Taille: ${vetement.size}, Prix: ${vetement.price} MAD'),
+                              trailing: IconButton(
+                                icon: Icon(Icons.close, color: Colors.red),
+                                onPressed: () {
+                                  removeItemFromPanier(vetement);
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 16), // Espace entre les articles
+                        ],
                       );
                     },
                   ),
@@ -69,17 +96,18 @@ Widget build(BuildContext context) {
                   child: Container(
                     padding: const EdgeInsets.all(12.0),
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 41, 128, 216),
+                      color: const Color.fromARGB(255, 0, 60, 109),
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Text(
                       'Total :  $total MAD',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontFamily: 'Merriweather'),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Merriweather',
+                      ),
                     ),
                   ),
                 ),
@@ -95,13 +123,12 @@ Widget build(BuildContext context) {
         setState(() {
           _selectedIndex = index;
         });
-        // Naviguer vers d'autres pages en fonction de l'index
         if (index == 0) {
-          Navigator.pushReplacementNamed(context, '/home'); // Remplacez '/acheter' par le nom de votre route d'achat
+          Navigator.pushReplacementNamed(context, '/home');
         } else if (index == 1) {
           // Reste sur la page du panier
         } else if (index == 2) {
-          Navigator.pushReplacementNamed(context, '/profile'); // Remplacez '/profile' par le nom de votre route de profil
+          Navigator.pushReplacementNamed(context, '/profile');
         }
       },
     ),
@@ -109,14 +136,14 @@ Widget build(BuildContext context) {
 }
 
 
-  Stream<List<Vetement>> fetchPanierItems() {
-    final user =
-        FirebaseAuth.instance.currentUser; // Récupérer l'utilisateur connecté
+
+Stream<List<Vetement>> fetchPanierItems() {
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return Stream.value(
-          []); // Aucun utilisateur connecté, retourne un panier vide
+      return Stream.value([]); // Return empty cart if no user is logged in
     }
-    String userId = user.uid; // Utiliser l'ID de l'utilisateur connecté
+
+    String userId = user.uid;
     return FirebaseFirestore.instance
         .collection('panier')
         .doc(userId)
@@ -128,8 +155,7 @@ Widget build(BuildContext context) {
   }
 
   void removeItemFromPanier(Vetement vetement) {
-    final user =
-        FirebaseAuth.instance.currentUser; // Récupérer l'utilisateur connecté
+    final user = FirebaseAuth.instance.currentUser; // Récupérer l'utilisateur connecté
     if (user == null) return; // Si aucun utilisateur connecté, ne rien faire
 
     String userId = user.uid; // Utiliser l'ID de l'utilisateur connecté

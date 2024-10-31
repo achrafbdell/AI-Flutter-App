@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,21 +42,43 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      //backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text("Fashion Market"),
-        centerTitle: true,
-        backgroundColor: const Color.fromARGB(218, 17, 73, 153),
-        foregroundColor: Colors.white,
+  
+
+
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Fashion Market",
+            style: GoogleFonts.montserrat( // Change the font here
+              fontSize: 24, // Adjust size as needed
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 8), // Spacing between title and icon
+          Icon(
+            Icons.shopping_bag,
+            size: 28,
+            color: Colors.white,
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
+      centerTitle: true,
+      backgroundColor: const Color.fromARGB(230, 18, 52, 136),
+      foregroundColor: Colors.white,
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Center(
+        child: SingleChildScrollView(
           child: Card(
-            //color: Colors.white,
             elevation: 8,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -70,18 +93,21 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(218, 0, 0, 0),
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 30),
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.grey[700]),
+                      prefixIcon: Icon(Icons.email, color: Colors.grey[700]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.grey[100],
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -89,11 +115,13 @@ class _LoginPageState extends State<LoginPage> {
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: 'Mot de passe',
+                      labelStyle: TextStyle(color: Colors.grey[700]),
+                      prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.grey[100],
                     ),
                     obscureText: true,
                   ),
@@ -101,25 +129,28 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      //backgroundColor: Colors.blueGrey,
-                      foregroundColor: Colors.black,
+                      backgroundColor: Color.fromARGB(218, 17, 73, 153),
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 38, vertical: 18),
+                          horizontal: 40, vertical: 18),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       textStyle: const TextStyle(
-                        fontSize: 14, // Increased font size
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
-                    ),
+                      ),
                     ),
                     child: const Text("Se connecter"),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 20),
                   if (_errorMessage != null)
                     Text(
                       _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                 ],
               ),
@@ -127,6 +158,14 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+
+
+
+
+
+
 }

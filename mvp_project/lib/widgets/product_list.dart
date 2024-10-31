@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mvp_project/models/vetements.dart';
@@ -23,89 +22,116 @@ class VetementsList extends StatelessWidget {
         if (snapshot.hasError) {
           print('Error: ${snapshot.error}');
           return Center(
-              child: Text(
-                  'Erreur lors du chargement de la base de données Firebase !'));
+            child: Text(
+                'Erreur lors du chargement de la base de données Firebase !'),
+          );
         } else if (!snapshot.hasData) {
           return Center(child: CircularProgressIndicator());
         } else {
           final vetements = snapshot.data!;
-          return ListView.builder(
-            itemCount: vetements.length,
-            itemBuilder: (context, index) {
-              final vetement = vetements[index];
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                elevation: 4,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailPage(vetement: vetement),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Image carrée du vêtement avec bord arrondi
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: vetement.decodeImage(),
-                        ),
-                        SizedBox(width: 16),
-                        // Informations sur le vêtement
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                vetement.title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18, // Agrandir le titre
-                                ),
-                              ),
-                              SizedBox(height: 30), // Espacement entre les champs
-                              Text(
-                                'Taille : ${vetement.size}',
-                                style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: 8), // Espacement entre les champs
-                              Text(
-                                'Prix : ${vetement.price} MAD',
-                                style: TextStyle(fontSize: 14, color: const Color.fromARGB(255, 25, 156, 7),fontWeight: FontWeight.bold ),
-                              ),
-                            ],
+          return Padding(
+            padding: EdgeInsets.only(top: 0.0), // Espacement en haut
+            child: ListView.builder(
+              itemCount: vetements.length,
+              itemBuilder: (context, index) {
+                final vetement = vetements[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 8.0),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(15),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DetailPage(vetement: vetement),
                           ),
+                        );
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.all(16), // Padding interne
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  //color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(0.1)),
+                                ),
+                                child: vetement
+                                    .decodeImage(), // Méthode pour afficher l'image
+                              ),
+                            ),
+                            SizedBox(width: 15),
+                            // Informations du vêtement
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    vetement.title,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 19,
+                                      fontFamily: 'Noto Sans Mono',
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Taille : ${vetement.size}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 15),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal:
+                                            12), // Padding interne du conteneur
+                                    decoration: BoxDecoration(
+                                      color: Colors
+                                          .green[700], // Couleur de fond verte
+                                      borderRadius: BorderRadius.circular(
+                                          10), // Border radius
+                                    ),
+                                    child: Text(
+                                      '${vetement.price} MAD',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white, // Couleur du texte
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         }
       },
     );
-  }
-
-  void addItemToPanier(Vetement vetement) {
-    String userId = 'AAAEEE123'; // Remplacez par l'identifiant de l'utilisateur connecté
-    FirebaseFirestore.instance
-        .collection('panier')
-        .doc(userId)
-        .collection('vetement')
-        .add({
-      'imageUrl': vetement.imageBase64, // Enregistre l'image encodée en base64
-      'title': vetement.title,
-      'size': vetement.size,
-      'price': vetement.price,
-      'categorie': vetement.categorie,
-      'marque': vetement.marque,
-    }).then((value) => print('${vetement.title} ajouté au panier.'));
   }
 }

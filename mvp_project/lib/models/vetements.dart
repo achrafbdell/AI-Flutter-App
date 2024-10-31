@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Vetement {
-  final String imageBase64;
+  final String image;
   final String title;
   final String size;
   final double price;
@@ -12,7 +12,7 @@ class Vetement {
   final String marque;
 
   Vetement({
-    required this.imageBase64,
+    required this.image,
     required this.title,
     required this.size,
     required this.price,
@@ -20,12 +20,10 @@ class Vetement {
     required this.marque,
   });
 
-  String get imageUrl => imageBase64;
-
   factory Vetement.fromDocument(DocumentSnapshot doc) {
-    final imageBase64 = doc['imageUrl'];
+    final image = doc['image'];
     return Vetement(
-      imageBase64: imageBase64,
+      image: image,
       title: doc['title'],
       size: doc['size'].toString(),
       price: doc['price'].toDouble(),
@@ -35,7 +33,7 @@ class Vetement {
   }
 
   Image decodeImage() {
-    Uint8List bytes = base64Decode(imageBase64);
+    Uint8List bytes = base64Decode(image);
     return Image.memory(
       bytes,
       width: 120,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mvp_project/models/user_data.dart';
 import 'package:mvp_project/widgets/navbar.dart';
+import 'package:image_picker/image_picker.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -226,13 +228,17 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.only(top: 16.0),
-          child: Text(
-            'Mon Profil',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
+  automaticallyImplyLeading: false,
+  title: Padding(
+    padding: const EdgeInsets.only(top: 16.0, left: 8.0),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Mon Profil',
+        //style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ),
+  ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0, top: 16.0),
@@ -331,6 +337,8 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         child: Icon(Icons.add),
         tooltip: 'Ajouter un vêtement',
+        backgroundColor: const Color.fromARGB(255, 48, 144, 51),
+        foregroundColor: Colors.white,
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,

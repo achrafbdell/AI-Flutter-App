@@ -14,6 +14,8 @@ dependencies:
   firebase_auth_web: ^5.8.12 
   cloud_firestore: ^5.4.4
   firebase_storage: ^12.3.4
+  google_fonts: ^6.2.1
+  image_picker: ^0.8.4+2
 
 dev_dependencies:
   flutter_test:
@@ -21,9 +23,14 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
-  uses-material-design: true
-
-fonts:
-  - family: Merriweather
-    fonts:
-      - asset: fonts/Merriweather-Regular.ttf
+  fonts:
+    - family: Noto Serif
+      fonts:
+        - asset: fonts/NotoSerif-Regular.ttf
+        - asset: fonts/NotoSerif-Bold.ttf
+          weight: 700
+    - family: Noto Sans Mono
+      fonts:
+        - asset: fonts/NotoSansMono-Regular.ttf
+        - asset: fonts/NotoSansMono-Bold.ttf
+          weight: 700

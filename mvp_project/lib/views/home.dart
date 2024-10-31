@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mvp_project/views/cart.dart';
 import 'package:mvp_project/views/profile.dart';
 import 'package:mvp_project/widgets/product_list.dart';
@@ -29,32 +30,33 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Container(
-          padding: const EdgeInsets.only(top: 20.0),
-          child: Text(
-              _selectedIndex == 0
-                  ? 'Liste des Vetements'
-                  : _selectedIndex == 1
-                      ? 'Mon Panier'
-                      : '',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              )),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: Padding(
+        padding: EdgeInsets.all(30), 
+        child: Text(
+          _selectedIndex == 0
+              ? 'Liste des Vetements'
+              : _selectedIndex == 1
+                  ? 'Mon Panier'
+                  : '',
+          style: const TextStyle(fontSize: 23, fontFamily: 'Noto Sans Mono', fontWeight: FontWeight.w900)
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
-      body: _selectedIndex == 0
-          ? VetementsList()
-          : _selectedIndex == 1
-              ? PanierPage()
-              : ProfilePage(),
-    );
-  }
+    ),
+    bottomNavigationBar: CustomBottomNavigationBar(
+      selectedIndex: _selectedIndex,
+      onItemTapped: _onItemTapped,
+    ),
+    body: _selectedIndex == 0
+        ? VetementsList()
+        : _selectedIndex == 1
+            ? PanierPage()
+            : ProfilePage(),
+  );
+}
+
 }

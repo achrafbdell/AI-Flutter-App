@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mvp_project/models/vetements.dart';
 import '../views/product_detail.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class VetementsList extends StatelessWidget {
+  const VetementsList({super.key});
+
   Stream<List<Vetement>> fetchVetements() {
     return FirebaseFirestore.instance
         .collection('vetement')

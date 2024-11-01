@@ -1,10 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data'; // Import this for Uint8List
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mvp_project/models/user_data.dart';
 import 'package:mvp_project/widgets/navbar.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -29,7 +32,9 @@ class _ProfilePageState extends State<ProfilePage> {
   late TextEditingController _marqueController;
 
   bool _isHovered = false; // Ajout de la variable d'état pour le hover
-  int _selectedIndex = 2; // 2 pour le profil par défaut
+  final int _selectedIndex = 2; // 2 pour le profil par défaut
+
+  String _base64Image = '';
 
   @override
   void initState() {
@@ -173,14 +178,13 @@ class _ProfilePageState extends State<ProfilePage> {
     if (userId.isNotEmpty) {
       try {
         await FirebaseFirestore.instance.collection('vetement').add({
-          'imageUrl': _imageUrlController.text,
+          'image': _base64Image, // Utiliser l'image encodée en base64
           'title': _titleController.text,
           'size': _sizeController.text,
           'price': double.tryParse(_priceController.text) ?? 0.0,
           'categorie': _categorieController.text,
           'marque': _marqueController.text,
-          'userId':
-              userId, // Optionnel, pour associer le vêtement à l'utilisateur
+          'userId': userId,
         });
         _showSnackBar('Vêtement ajouté avec succès');
       } catch (e) {
@@ -228,17 +232,17 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  automaticallyImplyLeading: false,
-  title: Padding(
-    padding: const EdgeInsets.only(top: 16.0, left: 8.0),
-    child: Align(
-      alignment: Alignment.centerLeft,
-      child: Text(
-        'Mon Profil',
-        //style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-    ),
-  ),
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 16.0, left: 8.0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Mon Profil',
+              //style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0, top: 16.0),
@@ -259,8 +263,8 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          // Change Column to ListView
           children: [
             TextField(
               controller: _loginController,
@@ -269,7 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
             SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              obscureText: true, // Masquer le mot de passe
+              obscureText: true,
               decoration: InputDecoration(labelText: 'Mot de passe'),
             ),
             TextField(
@@ -294,19 +298,18 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: 25),
             Center(
-              // Centrer le bouton
               child: SizedBox(
-                width: 180, // Largeur du bouton
-                height: 50, // Hauteur du bouton
+                width: 180,
+                height: 50,
                 child: MouseRegion(
                   onEnter: (_) {
                     setState(() {
-                      _isHovered = true; // Changer l'état à hovered
+                      _isHovered = true;
                     });
                   },
                   onExit: (_) {
                     setState(() {
-                      _isHovered = false; // Changer l'état à non hovered
+                      _isHovered = false;
                     });
                   },
                   child: ElevatedButton(
@@ -335,10 +338,10 @@ class _ProfilePageState extends State<ProfilePage> {
         onPressed: () {
           _showAddClothingDialog();
         },
-        child: Icon(Icons.add),
         tooltip: 'Ajouter un vêtement',
         backgroundColor: const Color.fromARGB(255, 48, 144, 51),
         foregroundColor: Colors.white,
+        child: Icon(Icons.add),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
@@ -351,57 +354,94 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Ajouter un nouveau vêtement'),
-          content: Container(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _imageUrlController,
-                  decoration: InputDecoration(labelText: 'URL de l\'image'),
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text('Nouveau vêtement'),
+              content: Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Afficher l'image sélectionnée
+                    _base64Image.isNotEmpty
+                        ? Image.memory(
+                            base64Decode(_base64Image),
+                            height: 150, // Ajustez la hauteur selon vos besoins
+                            width: 150, // Ajustez la largeur selon vos besoins
+                            fit: BoxFit.cover,
+                          )
+                        : Text('Aucune image sélectionnée'),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        await _pickImage(
+                            setState); // Passer setState à _pickImage
+                      },
+                      child: Text('Choisir une image'),
+                    ),
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(labelText: 'Titre'),
+                    ),
+                    TextField(
+                      controller: _sizeController,
+                      decoration: InputDecoration(labelText: 'Taille'),
+                    ),
+                    TextField(
+                      controller: _priceController,
+                      decoration: InputDecoration(labelText: 'Prix'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    TextField(
+                      controller: _categorieController,
+                      decoration: InputDecoration(labelText: 'Catégorie'),
+                    ),
+                    TextField(
+                      controller: _marqueController,
+                      decoration: InputDecoration(labelText: 'Marque'),
+                    ),
+                  ],
                 ),
-                TextField(
-                  controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Titre'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _addClothing();
+                    Navigator.of(context)
+                        .pop(); // Fermer la boîte de dialogue après l'ajout
+                  },
+                  child: Text('Ajouter'),
                 ),
-                TextField(
-                  controller: _sizeController,
-                  decoration: InputDecoration(labelText: 'Taille'),
-                ),
-                TextField(
-                  controller: _priceController,
-                  decoration: InputDecoration(labelText: 'Prix'),
-                  keyboardType: TextInputType.number,
-                ),
-                TextField(
-                  controller: _categorieController,
-                  decoration: InputDecoration(labelText: 'Catégorie'),
-                ),
-                TextField(
-                  controller: _marqueController,
-                  decoration: InputDecoration(labelText: 'Marque'),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context)
+                        .pop(); // Fermer la boîte de dialogue sans ajouter
+                  },
+                  child: Text('Annuler'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _addClothing();
-                Navigator.of(context).pop();
-              },
-              child: Text('Ajouter'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Annuler'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
+  }
+
+  Future<void> _pickImage(StateSetter setState) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? pickedFile =
+          await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        // Read the picked file as bytes
+        final bytes = await pickedFile.readAsBytes();
+        // Convert bytes to base64
+        setState(() {
+          _base64Image = base64Encode(bytes); // Update the base64 image string
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la sélection de l\'image: $e');
+    }
   }
 }

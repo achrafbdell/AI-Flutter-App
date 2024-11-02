@@ -28,12 +28,10 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      // ignore: unused_local_variable
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -42,130 +40,114 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  
-
-
-
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Fashion Market",
-            style: GoogleFonts.montserrat( // Change the font here
-              fontSize: 24, // Adjust size as needed
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
+        title: Text(
+          "Fashion Market",
+          style: GoogleFonts.alkatra(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: const Color.fromARGB(251, 0, 0, 0),
           ),
-          const SizedBox(width: 8), // Spacing between title and icon
-          Icon(
-            Icons.shopping_bag,
-            size: 28,
-            color: Colors.white,
-          ),
-        ],
+        ),
+        centerTitle: false, // Assure que le titre est aligné à gauche
+        elevation: 0,
       ),
-      centerTitle: true,
-      backgroundColor: const Color.fromARGB(230, 18, 52, 136),
-      foregroundColor: Colors.white,
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Center(
+      backgroundColor: const Color.fromARGB(111, 207, 207, 207),
+      body: Center(
         child: SingleChildScrollView(
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Connexion",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(218, 0, 0, 0),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      labelStyle: TextStyle(color: Colors.grey[700]),
-                      prefixIcon: Icon(Icons.email, color: Colors.grey[700]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe',
-                      labelStyle: TextStyle(color: Colors.grey[700]),
-                      prefixIcon: Icon(Icons.lock, color: Colors.grey[700]),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(218, 17, 73, 153),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    child: const Text("Se connecter"),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_errorMessage != null)
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              shadowColor: Colors.black26,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
+                      "Connexion",
+                      style: GoogleFonts.baiJamjuree(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: const Color.fromARGB(255, 0, 0, 0),
                       ),
                     ),
-                ],
+                    const SizedBox(height: 44),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: const TextStyle(color: Color.fromARGB(196, 58, 58, 58)),
+                        prefixIcon: const Icon(Icons.email, color: Color.fromARGB(214, 58, 58, 58)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Mot de passe',
+                        labelStyle: const TextStyle(color: Color.fromARGB(196, 58, 58, 58)),
+                        prefixIcon: const Icon(Icons.lock, color: Color.fromARGB(214, 58, 58, 58)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 26, 85, 195),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 5,
+                        textStyle: GoogleFonts.openSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: const Text("Se connecter"),
+                    ),
+                    const SizedBox(height: 20),
+                    if (_errorMessage != null)
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-
-
-
-
-
-
-
+    );
+  }
 }

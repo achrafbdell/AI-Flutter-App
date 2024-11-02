@@ -8,6 +8,8 @@ import 'package:mvp_project/models/user_data.dart';
 import 'package:mvp_project/widgets/navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tflite/tflite.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -33,12 +35,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _isHovered = false; // Ajout de la variable d'état pour le hover
   final int _selectedIndex = 2; // 2 pour le profil par défaut
-
   String _base64Image = '';
+  String _selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
+    loadModel();
+
     _loginController = TextEditingController();
     _passwordController = TextEditingController();
     _birthdayController = TextEditingController();
@@ -55,6 +59,14 @@ class _ProfilePageState extends State<ProfilePage> {
     _marqueController = TextEditingController();
 
     _fetchUserData();
+  }
+
+   loadModel() async {
+    String? res = await Tflite.loadModel(
+      model: "assets/model_unquant.tflite", // Path to your model
+      labels: "assets/labels.txt", // Path to your labels
+    );
+    print(res);
   }
 
   void _fetchUserData() async {
@@ -195,7 +207,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
-  void dispose() {
+  void dispose() {    
     _loginController.dispose();
     _passwordController.dispose();
     _birthdayController.dispose();
@@ -210,6 +222,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _priceController.dispose();
     _categorieController.dispose();
     _marqueController.dispose();
+
+    Tflite.close();
 
     super.dispose();
   }
@@ -350,15 +364,16 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _showAddClothingDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              title: Text('Nouveau vêtement'),
-              content: Container(
+ void _showAddClothingDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Center(child: Text('Nouveau vêtement')),
+            content: SingleChildScrollView( // Utilisation de SingleChildScrollView
+              child: Container(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -371,11 +386,10 @@ class _ProfilePageState extends State<ProfilePage> {
                             fit: BoxFit.cover,
                           )
                         : Text('Aucune image sélectionnée'),
-
+                    SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () async {
-                        await _pickImage(
-                            setState); // Passer setState à _pickImage
+                        await _pickImage(setState); // Passer setState à _pickImage
                       },
                       child: Text('Choisir une image'),
                     ),
@@ -395,6 +409,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     TextField(
                       controller: _categorieController,
                       decoration: InputDecoration(labelText: 'Catégorie'),
+                      readOnly: true,
                     ),
                     TextField(
                       controller: _marqueController,
@@ -403,45 +418,64 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    _addClothing();
-                    Navigator.of(context)
-                        .pop(); // Fermer la boîte de dialogue après l'ajout
-                  },
-                  child: Text('Ajouter'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .pop(); // Fermer la boîte de dialogue sans ajouter
-                  },
-                  child: Text('Annuler'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _addClothing();
+                  Navigator.of(context).pop(); // Fermer la boîte de dialogue après l'ajout
+                },
+                child: Text('Ajouter'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Fermer la boîte de dialogue sans ajouter
+                },
+                child: Text('Annuler'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
-  Future<void> _pickImage(StateSetter setState) async {
-    try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile =
-          await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        // Read the picked file as bytes
-        final bytes = await pickedFile.readAsBytes();
-        // Convert bytes to base64
-        setState(() {
-          _base64Image = base64Encode(bytes); // Update the base64 image string
-        });
-      }
-    } catch (e) {
-      print('Erreur lors de la sélection de l\'image: $e');
+
+Future<void> _pickImage(StateSetter setState) async {
+  final ImagePicker _picker = ImagePicker();
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+  if (image != null) {
+    // Read the image file as bytes
+    Uint8List imageBytes = await image.readAsBytes();
+
+    // Convert bytes to Base64
+    setState(() {
+      _base64Image = base64Encode(imageBytes);
+    });
+  }
+}
+
+
+  
+    Future<void> classifyImage(String imagePath) async {
+    var recognitions = await Tflite.runModelOnImage(
+      path: imagePath,
+      numResults: 1, // Set this based on how many results you want
+      threshold: 0.5, // Adjust this threshold based on your model's accuracy
+    );
+
+    if (recognitions != null && recognitions.isNotEmpty) {
+      // Assuming your model returns a label as the first element
+      String category = recognitions[0]['label'];
+      setState(() {
+        _selectedCategory = category; // Set the selected category based on the model output
+        _categorieController.text = category; // Update the category TextField
+      });
     }
   }
+
+
+
 }

@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         centerTitle: false, // Assure que le titre est aligné à gauche
         elevation: 0,
       ),
-      backgroundColor: const Color.fromARGB(111, 207, 207, 207),
+      backgroundColor: const Color.fromARGB(255, 242, 242, 242),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

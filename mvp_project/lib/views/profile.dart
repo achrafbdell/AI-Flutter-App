@@ -9,8 +9,7 @@
   import 'package:google_fonts/google_fonts.dart';
   import 'package:image_picker/image_picker.dart';
   import 'package:tflite/tflite.dart';
-  import 'package:flutter/foundation.dart' show kIsWeb;
-
+  import 'package:flutter/foundation.dart';
 
   class ProfilePage extends StatefulWidget {
     const ProfilePage({super.key});
@@ -38,11 +37,15 @@
     final int _selectedIndex = 2; // 2 pour le profil par défaut
     String _base64Image = '';
     String _selectedCategory = '';
+    final ImagePicker _picker = ImagePicker();
+    Uint8List? _imageData;
+    String _predictedCategory = ''; // Store predicted category
+
 
     @override
     void initState() {
       super.initState();
-      loadModel();
+    loadModel();
 
       _loginController = TextEditingController();
       _passwordController = TextEditingController();
@@ -62,14 +65,18 @@
       _fetchUserData();
     }
 
-  loadModel() async {
-    if (!kIsWeb) {
-      await Tflite.loadModel(
-        model: "assets/model_unquant.tflite",
-        labels: "assets/labels.txt",
-      );
-    }
+ void loadModel() async {
+  try {
+    String? res = await Tflite.loadModel(
+      model: "assets/models/model_unquant.tflite",
+      labels: "assets/models/labels.txt",
+    );
+    print("Model loaded: $res");
+  } catch (e) {
+    print("Failed to load model: $e");
   }
+}
+
 
     void _fetchUserData() async {
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -188,11 +195,6 @@
     }
 
     Future<void> _addClothing() async {
-      if (_selectedCategory.isEmpty) {
-        _showSnackBar(
-            'Veuillez d\'abord sélectionner une image pour détecter la catégorie');
-        return;
-      }
       String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       if (userId.isNotEmpty) {
         try {
@@ -232,9 +234,8 @@
 
       //Tflite.close();
 
-      if (!kIsWeb) {
       Tflite.close();
-    }
+    
 
       super.dispose();
     }
@@ -464,7 +465,7 @@
       );
     }
 
-    Future<void> _pickImage(StateSetter setState) async {
+   Future<void> _pickImage(StateSetter setState) async {
       final ImagePicker _picker = ImagePicker();
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -483,13 +484,33 @@
       }
     }
 
+/*Future<void> _selectImage() async {
+  final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+  
+  if (pickedFile != null) {
+    // Lire l'image en tant que Uint8List
+    final bytes = await pickedFile.readAsBytes();
+    
+    setState(() {
+      _imageData = bytes; // Stocker l'image sélectionnée
+      _base64Image = base64Encode(bytes); // Encoder l'image en base64
+    });
+  } else {
+    print('Aucune image sélectionnée');
+  }
+}*/
+
+
+
 
     Future<void> _classifyImage(XFile image, StateSetter setState) async {
       var recognitions = await Tflite.runModelOnImage(
         path: image.path,
         numResults: 1,
         threshold: 0.5,
+        asynch: true
       );
+      print(recognitions);
 
       if (recognitions != null && recognitions.isNotEmpty) {
         setState(() {
@@ -499,4 +520,20 @@
         });
       }
     }
+
+/*Future<void> _predictCategory(File image) async {
+    var recognitions = await Tflite.runModelOnImage(
+      path: image.path,
+      numResults: 1,
+      threshold: 0.5,
+    );
+    if (recognitions != null && recognitions.isNotEmpty) {
+      setState(() {
+        _predictedCategory = recognitions[0]['label'];
+        _categorieController.text = _predictedCategory;
+      });
+    }
+  }*/
+
+    
   }

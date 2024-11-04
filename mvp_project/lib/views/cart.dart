@@ -101,7 +101,7 @@ class _PanierPageState extends State<PanierPage> {
                     child: Container(
                       padding: const EdgeInsets.all(12.0),
                       decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 0, 60, 109),
+                        color: const Color.fromARGB(255, 14, 137, 190),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Text(
